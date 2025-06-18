@@ -1,3 +1,4 @@
+![Header](CudaHeader.png)
 # CUDA Custom Layers
 This repository implements a custom forward pass for a neural operation using CUDA and integrates it into PyTorch via C++/CUDA extensions. It supports:
 
