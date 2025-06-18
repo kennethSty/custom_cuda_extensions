@@ -1,0 +1,14 @@
+Using /csghome/eml01/.cache/torch_extensions/py311_cu126 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /csghome/eml01/.cache/torch_extensions/py311_cu126/custom_kernels/build.ninja...
+/csghome/eml01/.conda/envs/kernel_env/lib/python3.11/site-packages/torch/utils/cpp_extension.py:2356: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'].
+  warnings.warn(
+Building extension module custom_kernels...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+ninja: no work to do.
+Loading extension module custom_kernels...
+Optimized Impl. Shape Test PASSED
+custom_forward_opt time: 0.637 ms
+torch_forward time: 0.493 ms
+Optimized Impl. Value Test PASSED
