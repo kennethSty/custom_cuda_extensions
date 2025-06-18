@@ -8,7 +8,13 @@ Building extension module custom_kernels...
 Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
 ninja: no work to do.
 Loading extension module custom_kernels...
+Naive Impl. Shape Test PASSED
+custom_forward_naive time: 0.047 ms
+torch_forward time: 0.114 ms
+Naive Impl. Value Test PASSED
 Optimized Impl. Shape Test PASSED
-custom_forward_opt time: 0.637 ms
-torch_forward time: 0.493 ms
+custom_forward_opt time: 0.062 ms
+torch_forward time: 0.110 ms
+Optimized Impl. Value Test PASSED
+torch_forward time: 0.327 ms
 Optimized Impl. Value Test PASSED

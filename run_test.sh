@@ -5,4 +5,4 @@
 #SBATCH --output kernel_test_log
 #SBATCH --gres=gpu:1
 
-srun python test.py
+srun python torch/test.py

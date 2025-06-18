@@ -1,18 +1,20 @@
+import os
 import torch
 import torch.nn.functional as F
 from torch.utils.cpp_extension import load
-import os
 
 #Loads the custom_kernels module
 module_path = os.path.dirname(__file__)
+cuda_path = os.path.join(module_path, "..", "cuda")
+
 custom_kernels = load(
-    name = "custom_kernels",
-    sources = [
-        os.path.join(module_path, "binding.cpp"),
-        os.path.join(module_path, "kernels_naive.cu"),
-        os.path.join(module_path, "kernels_optimized.cu")
-        ],
-    verbose = True
+    name="custom_kernels",
+    sources=[
+        os.path.join(cuda_path, "binding.cpp"),
+        os.path.join(cuda_path, "kernels_naive.cu"),
+        os.path.join(cuda_path, "kernels_optimized.cu")
+    ],
+    verbose=True,
 )
 
 def custom_forward_naive(input, weight1, bias, weight2, debug = False): 

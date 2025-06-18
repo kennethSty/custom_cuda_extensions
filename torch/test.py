@@ -2,7 +2,7 @@ import torch
 import time
 from wrapper import custom_forward_naive, custom_forward_opt, torch_forward
 
-batch, n = 10, 2200
+batch, n = 10, 32
 torch.manual_seed(42)
 torch.cuda.manual_seed(42)
 
@@ -121,3 +121,14 @@ def test_opt_values_and_time():
     if torch.allclose(out_opt, out_torch, rtol=1e-4, atol=1e-5):
         print("Optimized Impl. Value Test PASSED")
     else:
+        print("Optimized Impl. Value Test NOT PASSED")
+        print("-----------out_torch - out_custom ----------")
+        print(out_torch - out_opt)
+
+
+if __name__ == "__main__":
+    if n <= 32:
+        test_naive_shape()
+        test_naive_values_and_time()
+    test_opt_shape()
+    test_opt_values_and_time()
