@@ -127,7 +127,7 @@ def test_opt_values_and_time():
 
 
 if __name__ == "__main__":
-    if n <= 32:
+    if n > 32:
         test_naive_shape()
         test_naive_values_and_time()
     test_opt_shape()

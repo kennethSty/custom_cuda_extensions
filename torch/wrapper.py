@@ -57,10 +57,3 @@ def torch_forward(x, weight1, bias, weight2, batch, n):
     # (batch, n, 1) @ (batch, 1, n) -> (batch, n, n)
     return rows @ cols
 
-def torch_forward_debug(input, weight1, bias, weight2, batch, n):
-    x1 = input @ weight1            # (B, N)
-    x2 = x1 + bias                  # (B, N)
-    x3 = torch.relu(x2)            # (B, N)
-    x4 = x3.unsqueeze(2) @ x3.unsqueeze(1)  # (B, N, N)
-    return x1, x2, x3, x4
-

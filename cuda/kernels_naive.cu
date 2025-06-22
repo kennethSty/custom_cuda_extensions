@@ -1,5 +1,6 @@
 #include <torch/extension.h>
 #include <cuda_runtime.h>
+#include "error_handling.h"
 
 #define CEIL_DIV(a, b) ((a + b - 1)/b)
 
@@ -111,6 +112,8 @@ torch::Tensor custom_forward_naive(torch::Tensor input, torch::Tensor weight1,
 			out1.data_ptr<float>(),
 			batch,
 			n);
+
+        HANDLE_ERROR(cudaGetLastError());	
 	
 	//Layer 2
 	dense_square_k<<<gridDimDense, blockDim>>>(
@@ -118,15 +121,19 @@ torch::Tensor custom_forward_naive(torch::Tensor input, torch::Tensor weight1,
 	       	        weight2.data_ptr<float>(),
 	                out2.data_ptr<float>(),
 	               	batch,
-		 	n);
+			n);
 	
+	HANDLE_ERROR(cudaGetLastError());
+
 	//Layer 3
 	outer_prod_k<<<gridDimOut, blockDim>>>(
 			out2.data_ptr<float>(),
 			out3.data_ptr<float>(), 
 			batch,
 			n);
-
-	cudaDeviceSynchronize();
+	
+	HANDLE_ERROR(cudaGetLastError());
+	
+	HANDLE_ERROR(cudaDeviceSynchronize());
 	return out3;	
 }
