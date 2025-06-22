@@ -19,6 +19,7 @@ def test_naive_shape():
         print("Naive Impl. Shape Test PASSED")
     else: 
         print("Naive Impl. Shape Test NOT PASSED")
+        print(f"Shape: {out.shape}")
  
 def test_opt_shape():
     """
@@ -33,6 +34,7 @@ def test_opt_shape():
         print("Optimized Impl. Shape Test PASSED")
     else: 
         print("Optimized Impl. Shape Test NOT PASSED")
+        print(f"Shape: {out.shape}")
 
 
 def test_naive_values_and_time():
@@ -115,19 +117,10 @@ def test_opt_values_and_time():
         print("-----------out_torch - out_opt ----------")
         print(out_torch - out_opt)
 
-    end_torch = time.perf_counter()
-    print(f"torch_forward time: {(end_torch - start_torch) * 1000:.3f} ms")
-
-    if torch.allclose(out_opt, out_torch, rtol=1e-4, atol=1e-5):
-        print("Optimized Impl. Value Test PASSED")
-    else:
-        print("Optimized Impl. Value Test NOT PASSED")
-        print("-----------out_torch - out_custom ----------")
-        print(out_torch - out_opt)
 
 
 if __name__ == "__main__":
-    if n > 32:
+    if n <= 32:
         test_naive_shape()
         test_naive_values_and_time()
     test_opt_shape()

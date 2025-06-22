@@ -5,8 +5,6 @@
 
 #define CEIL_DIV(a, b) ((a + b - 1) / b)
 
-__global__ void outer_prod_k(const float* input, float* output, int batch, int n); // Implemented in kernels_naive.cu
-
 __global__ void bias_relu_k(float* input, const float* bias,int batch, int n) {
 	/*
 	 Performs elementwise bias addition and relu
@@ -84,12 +82,46 @@ __host__ void custom_dense_square_layer(const float* input,
 	square_k<<<gridDim, blockDim>>>(output, batch, n);
 }
 
+__global__ void outer_prod_k_opt(const float* input,
+		float* output, int batch, int n) {
+	/*
+	Cuda kernel computing the outer product of the input vector in place.
+	Assumes start of 2d grid with 'batch' number of blocks of size (n, n).
+	Reason for using 2d: Task is inherently 2d -> one matrix per input vector.
+	A thread computes the (i,j) element of the nxn matrix for
+	the b-th vector out of 'batch' input vectors.
+	*/
+        int y = blockIdx.y * blockDim.y + threadIdx.y; //row index
+	int x = blockIdx.x * blockDim.x + threadIdx.x; //col index
+	int z = blockIdx.z; //batch index
+	bool is_valid_thread = (x < n) && (y < n) && (z < batch);
+
+	if (is_valid_thread) {
+	    int batch_offset = z * n * n;
+	    int row_offset = y * n;
+	    float elem_y = input[z * n + y];
+	    float elem_x = input[z * n + x];
+	    output[batch_offset + row_offset + x] = elem_y * elem_x;
+	}
+}
+
 torch::Tensor custom_forward_opt(torch::Tensor input, torch::Tensor weight1,
 		torch::Tensor bias, torch::Tensor weight2) {
+	
+	//Setup kernel execution variables
 	int batch = input.size(0);
 	int n = input.size(1);
 	
-	auto options = input.options();
+	const int threads_per_dim = 32;
+	const int num_blocks_n = CEIL_DIV(n, threads_per_dim);
+        const int num_blocks_batch = CEIL_DIV(batch, threads_per_dim);	
+
+	dim3 blockDim(threads_per_dim, threads_per_dim);
+	dim3 gridDimDense(num_blocks_n, num_blocks_batch);
+        dim3 gridDimOut(num_blocks_n, num_blocks_n, batch);
+
+        //Allocate output tensors on same device as input tensor	
+       	auto options = input.options();
 	auto out1 = torch::empty({batch, n}, options);
 	auto out2 = torch::empty({batch, n}, options);
 	auto out3 = torch::empty({batch, n, n}, options);
@@ -97,13 +129,6 @@ torch::Tensor custom_forward_opt(torch::Tensor input, torch::Tensor weight1,
 	//Init variables needed for cuda Sgemm and cuda kernels
 	cublasHandle_t handle = at::cuda::getCurrentCUDABlasHandle();
 	const float alpha = 1.0f, beta = 0.0f;
-	
-	const int threads_in_warp = 32;
-	const int num_blocks = CEIL_DIV(n, threads_in_warp);
-	
-	dim3 blockDim(threads_in_warp, threads_in_warp);
-	dim3 gridDimDense(num_blocks, num_blocks);
-        dim3 gridDimOut(num_blocks, num_blocks, batch);
 
 	//Layer 1: Dense Relu 
         custom_dense_relu_layer(
@@ -125,7 +150,7 @@ torch::Tensor custom_forward_opt(torch::Tensor input, torch::Tensor weight1,
 	);
 
 	// Layer 3: Outer Product
-        outer_prod_k<<<gridDimOut, blockDim>>>(
+        outer_prod_k_opt<<<gridDimOut, blockDim>>>(
 		out2.data_ptr<float>(),
 		out3.data_ptr<float>(),
 		batch,
@@ -135,4 +160,3 @@ torch::Tensor custom_forward_opt(torch::Tensor input, torch::Tensor weight1,
     	cudaDeviceSynchronize();
     	return out3;
 }
-
